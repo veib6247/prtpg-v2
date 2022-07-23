@@ -1,6 +1,7 @@
 <script setup>
 // utils
 import { ref } from 'vue'
+import md5 from 'crypto-js/md5'
 
 // state manager
 import { request } from '../stateStore.js'
@@ -11,6 +12,18 @@ import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
 
 // local vars
 const endPoint = ref('https://preprod.prtpg.com/transaction/Checkout')
+
+/**
+ * generate hash
+ */
+function generateHash() {
+  // MEMBERID|TOTYPE|AMOUNT|TRANSACTIONID|REDIRECTURL|SECURE_KEY
+  console.info(
+    md5(
+      `${request.memberId}|${request.totype}|${request.amount}|${request.merchantTransactionId}|${request.merchantRedirectUrl}|${request.secureKey}`
+    ).toString()
+  )
+}
 </script>
 
 <template>
@@ -82,6 +95,10 @@ const endPoint = ref('https://preprod.prtpg.com/transaction/Checkout')
         input-placeholder="XXXXXXXXXXXXX"
         v-model="request.secureKey"
       />
+
+      <button type="button" class="btn btn-dark" @click="generateHash">
+        Generate Hash
+      </button>
     </div>
   </div>
 </template>
