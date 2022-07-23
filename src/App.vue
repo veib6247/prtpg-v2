@@ -86,6 +86,7 @@ onMounted(() => {
   // assign a merchant transaction ID
   request.merchantTransactionId = nanoid()
 
+  // update the selected menu based on the hash in the URL
   updateSelectedMenu(currentPath.value)
 })
 </script>

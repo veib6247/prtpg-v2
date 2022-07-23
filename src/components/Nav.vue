@@ -3,7 +3,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="#">Paymentz | Payment Gateway Tester</a>
+      <a class="navbar-brand fs-2 m-3">PZ Gateway Tester</a>
       <button
         class="navbar-toggler"
         type="button"
