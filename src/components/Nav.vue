@@ -2,8 +2,8 @@
 
 <template>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
-      <a class="navbar-brand fs-2 m-3">PZ Gateway Tester</a>
+    <div class="container-lg">
+      <a class="navbar-brand fs-2 p-3">PZ | Gateway Tester</a>
       <button
         class="navbar-toggler"
         type="button"

@@ -8,6 +8,7 @@ import { request } from './stateStore.js'
 
 // imports for components
 import Nav from './components/Nav.vue'
+import Footer from './components/Footer.vue'
 import StandardCheckout from './components/StandardCheckout.vue'
 import ServerToServer from './components/ServerToServer.vue'
 import NotFound from './components/NotFound.vue'
@@ -96,12 +97,10 @@ onMounted(() => {
   <Nav />
 
   <!-- main content -->
-  <div class="container-lg">
+  <div class="container-lg p-4">
     <div class="row g-5">
       <!-- left column -->
       <div class="col-3 p-4">
-        <h4 class="fs-5">Integration Types</h4>
-
         <!-- menu for the available integrations -->
         <div class="list-group">
           <a
@@ -142,6 +141,9 @@ onMounted(() => {
       </div>
     </div>
   </div>
+
+  <!-- footer -->
+  <Footer />
 </template>
 
 <style>

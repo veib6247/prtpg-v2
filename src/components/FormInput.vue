@@ -22,6 +22,14 @@ defineProps({
     type: String,
   },
 
+  helperTextId: {
+    type: String,
+  },
+
+  helperText: {
+    type: String,
+  },
+
   modelValue: {
     type: String,
   },
@@ -38,6 +46,7 @@ defineEmits(['update:modelValue'])
     <input
       :type="inputType"
       class="form-control font-monospace"
+      :aria-describedby="helperTextId"
       :id="inputId"
       :placeholder="inputPlaceholder"
       :value="modelValue"
@@ -47,5 +56,9 @@ defineEmits(['update:modelValue'])
     <label :for="inputId" class="form-label">
       {{ inputLabel }}
     </label>
+
+    <div :id="helperTextId" class="form-text" v-if="helperText">
+      {{ helperText }}
+    </div>
   </div>
 </template>
