@@ -1,17 +1,36 @@
 <script setup>
 // utils
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import md5 from 'crypto-js/md5'
+import { formatParams } from '../utils/stringFormatters.js'
 
 // state manager
 import { request } from '../stateStore.js'
 
 // reuseable components
 import FormInput from '../components/FormInput.vue'
+import FormText from '../components/FormText.vue'
 import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
 
 // local vars
 const endPoint = ref('https://preprod.prtpg.com/transaction/Checkout')
+let parameters = ref('')
+const defaultParameters = ref([
+  'orderDescription=This is a test transaction.',
+  'country=PH',
+  'city=Makati',
+  'state=NCR',
+  'postcode=1227',
+  'street=Valero',
+  'telnocc=63',
+  'phone=9854785236',
+  'email=flex.gateway@payreto.com',
+  'ip=192.168.0.1',
+  'currency=REPLACE_ME',
+  'terminalid=REPLACE_ME',
+  'paymentMode=REPLACE_ME',
+  'paymentBrand=REPLACE_ME',
+])
 
 /**
  * generate hash
@@ -24,6 +43,13 @@ function generateHash() {
     ).toString()
   )
 }
+
+/**
+ * mounted method here
+ */
+onMounted(() => {
+  parameters.value = formatParams(defaultParameters.value, '\n')
+})
 </script>
 
 <template>
@@ -96,9 +122,12 @@ function generateHash() {
         v-model="request.secureKey"
       />
 
-      <button type="button" class="btn btn-dark" @click="generateHash">
-        Generate Hash
-      </button>
+      <FormText
+        text-id="std-checkout-params"
+        text-label="Parameters"
+        :text-height="350"
+        v-model="parameters"
+      />
     </div>
   </div>
 </template>
