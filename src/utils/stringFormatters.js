@@ -1,4 +1,5 @@
 import { _ } from 'lodash'
+import md5 from 'crypto-js/md5'
 
 /**
  * Format params into string by providing a separator
@@ -19,4 +20,12 @@ export const formatParams = (arrDefault, separator) => {
   })
 
   return formattedParameters
+}
+
+/**
+ * Uses md5 module from the crypto-js package, returns md5 hash as value for the checksum
+ * @returns {string} Hashed value of the required fields
+ */
+export const generateHash = (dataString) => {
+  return md5(dataString).toString()
 }

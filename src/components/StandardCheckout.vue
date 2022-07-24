@@ -1,9 +1,8 @@
 <script setup>
 // utils
 import { ref, onMounted } from 'vue'
-import md5 from 'crypto-js/md5'
 import { _ } from 'lodash'
-import { formatParams } from '../utils/stringFormatters.js'
+import { formatParams, generateHash } from '../utils/stringFormatters.js'
 
 // state manager
 import { request } from '../stateStore.js'
@@ -41,15 +40,6 @@ onMounted(() => {
 })
 
 /**
- * @returns {string} hashed value of the required fields: MEMBERID|TOTYPE|AMOUNT|TRANSACTIONID|REDIRECTURL|SECURE_KEY
- */
-function generateHash() {
-  return md5(
-    `${request.memberId}|${request.totype}|${request.amount}|${request.merchantTransactionId}|${request.merchantRedirectUrl}|${request.secureKey}`
-  ).toString()
-}
-
-/**
  * Final step to redirect user to the hosted page
  */
 function submitStandardCheckout() {
@@ -57,7 +47,8 @@ function submitStandardCheckout() {
   let arrAllParams = _.split(parameters.value, '\n')
 
   // create the checksum parameter
-  let paramChecksum = `checksum=${generateHash()}`
+  let dataString = `${request.memberId}|${request.totype}|${request.amount}|${request.merchantTransactionId}|${request.merchantRedirectUrl}|${request.secureKey}`
+  let paramChecksum = `checksum=${generateHash(dataString)}`
   arrAllParams.push(paramChecksum)
 
   // get the required params from form and push to array
@@ -67,8 +58,8 @@ function submitStandardCheckout() {
   arrAllParams.push(`merchantTransactionId=${request.merchantTransactionId}`)
   arrAllParams.push(`merchantRedirectUrl=${request.merchantRedirectUrl}`)
 
-  // log to check
-  console.info('ALL', arrAllParams)
+  // log to console for later review by user
+  console.info('Data Submitted:', arrAllParams)
 
   // create the form element
   const form = document.createElement('form')
@@ -114,6 +105,8 @@ function submitStandardCheckout() {
         input-label="API Endpoint"
         input-placeholder="https://preprod.prtpg.com/transaction/Checkout"
         v-model="endPoint"
+        helper-text-id="endpointHelper"
+        helper-text="Change the subdomain to 'secure' for a live transaction."
       />
 
       <FormInput

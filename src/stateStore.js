@@ -4,6 +4,8 @@
 import { reactive } from 'vue'
 
 export const request = reactive({
+  partnerId: '',
+  username: '',
   memberId: '',
   totype: '',
   amount: '1.00',

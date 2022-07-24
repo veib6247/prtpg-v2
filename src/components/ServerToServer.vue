@@ -32,6 +32,34 @@ const endPoint = ref(
         input-label="API Endpoint"
         input-placeholder="https://preprod.prtpg.com/transaction/Checkout"
         v-model="endPoint"
+        helper-text-id="endpointHelper"
+        helper-text="Change the subdomain to 'secure' for a live transaction."
+      />
+
+      <FormInput
+        input-id="partnerId"
+        input-label="Partner ID"
+        input-placeholder="421"
+        v-model="request.partnerId"
+        helper-text-id="partnerIdHelper"
+        helper-text="The Partner's unique ID, this is assigned by the gateway provider."
+      />
+
+      <FormInput
+        input-id="username"
+        input-label="Merchant Username"
+        input-placeholder="421"
+        v-model="request.username"
+        helper-text-id="usernameHelper"
+        helper-text="This is assigned by the gateway provider."
+      />
+
+      <FormInput
+        input-id="secureKey"
+        input-type="password"
+        input-label="Merchant Secure Key"
+        input-placeholder="XXXXXXXXX"
+        v-model="request.secureKey"
       />
 
       <FormInput
@@ -41,14 +69,6 @@ const endPoint = ref(
         v-model="request.memberId"
         helper-text-id="memberIdHelper"
         helper-text="Merchant's unique ID, this is assigned by the gateway provider."
-      />
-
-      <FormInput
-        input-id="secureKey"
-        input-type="password"
-        input-label="Merchant Secure Key"
-        input-placeholder="XXXXXXXXX"
-        v-model="request.secureKey"
       />
 
       <FormInputTrxIdGen
