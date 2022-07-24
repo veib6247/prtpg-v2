@@ -2,6 +2,7 @@
 // utils
 import { ref, onMounted } from 'vue'
 import md5 from 'crypto-js/md5'
+import { _ } from 'lodash'
 import { formatParams } from '../utils/stringFormatters.js'
 
 // state manager
@@ -33,23 +34,65 @@ const defaultParameters = ref([
 ])
 
 /**
- * generate hash
- */
-function generateHash() {
-  // MEMBERID|TOTYPE|AMOUNT|TRANSACTIONID|REDIRECTURL|SECURE_KEY
-  console.info(
-    md5(
-      `${request.memberId}|${request.totype}|${request.amount}|${request.merchantTransactionId}|${request.merchantRedirectUrl}|${request.secureKey}`
-    ).toString()
-  )
-}
-
-/**
- * mounted method here
+ * Mounted method here
  */
 onMounted(() => {
   parameters.value = formatParams(defaultParameters.value, '\n')
 })
+
+/**
+ * @returns {string} hashed value of the required fields: MEMBERID|TOTYPE|AMOUNT|TRANSACTIONID|REDIRECTURL|SECURE_KEY
+ */
+function generateHash() {
+  return md5(
+    `${request.memberId}|${request.totype}|${request.amount}|${request.merchantTransactionId}|${request.merchantRedirectUrl}|${request.secureKey}`
+  ).toString()
+}
+
+/**
+ * Final step to redirect user to the hosted page
+ */
+function submitStandardCheckout() {
+  // get all params from the textbox and split into an array
+  let arrAllParams = _.split(parameters.value, '\n')
+
+  // create the checksum parameter
+  let paramChecksum = `checksum=${generateHash()}`
+  arrAllParams.push(paramChecksum)
+
+  // get the required params from form and push to array
+  arrAllParams.push(`memberId=${request.memberId}`)
+  arrAllParams.push(`totype=${request.totype}`)
+  arrAllParams.push(`amount=${request.amount}`)
+  arrAllParams.push(`merchantTransactionId=${request.merchantTransactionId}`)
+  arrAllParams.push(`merchantRedirectUrl=${request.merchantRedirectUrl}`)
+
+  // log to check
+  console.info('ALL', arrAllParams)
+
+  // create the form element
+  const form = document.createElement('form')
+  form.setAttribute('method', 'POST')
+  form.setAttribute('action', endPoint.value)
+  form.setAttribute('target', '_blank')
+
+  // loop through each item in array to create inputs
+  _.forEach(arrAllParams, function (param) {
+    // split by the equal sign
+    const arrItem = _.split(param, '=')
+
+    // create the input and append to form
+    const el = document.createElement('input')
+    el.setAttribute('type', 'hidden')
+    el.setAttribute('name', arrItem[0])
+    el.setAttribute('value', arrItem[1])
+    form.appendChild(el)
+  })
+
+  document.body.appendChild(form)
+
+  form.submit()
+}
 </script>
 
 <template>
@@ -128,6 +171,21 @@ onMounted(() => {
         :text-height="350"
         v-model="parameters"
       />
+
+      <div class="mb-3">
+        <button
+          type="button"
+          class="btn btn-dark"
+          @click="submitStandardCheckout"
+        >
+          Submit
+        </button>
+      </div>
+
+      <div class="alert alert-secondary" role="alert">
+        This will open a new tab for the hosted page to preserve current data
+        here for re-use later.
+      </div>
     </div>
   </div>
 </template>
