@@ -89,6 +89,10 @@ onMounted(() => {
 
   // update the selected menu based on the hash in the URL
   updateSelectedMenu(currentPath.value)
+
+  // create the redirect URL
+  let currentURL = new URL(window.location.href)
+  request.merchantRedirectUrl = `${currentURL.protocol}//${currentURL.host}${currentURL.pathname}php/display_request_result.php`
 })
 </script>
 
