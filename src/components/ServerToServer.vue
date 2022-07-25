@@ -1,6 +1,6 @@
 <script setup>
 // utils
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import {
   getSubdomain,
   formatParams,
@@ -51,6 +51,59 @@ const defaultParameters = ref([
   'paymentType=REPLACE_ME',
   'authentication.terminalId=REPLACE_ME',
 ])
+
+const selectedOperation = ref('Synchronous')
+const operations = ref([
+  'Synchronous',
+  'Capture/Refund',
+  'Reverse/Cancel',
+  'Inquiry',
+])
+const textAreaHeight = ref(500)
+
+/**
+ * watch for changes in the 'selectedOperation', update endpoint
+ */
+watch(selectedOperation, (currentOps) => {
+  // eval operation to determine endpoint, and later on the checksum data string
+  switch (currentOps) {
+    case 'Synchronous':
+      endPoint.value =
+        'https://preprod.prtpg.com/transactionServices/REST/v1/payments'
+      parameters.value = ''
+      textAreaHeight.value = 500
+      parameters.value = formatParams(defaultParameters.value, '\n')
+      break
+
+    case 'Capture/Refund':
+      endPoint.value =
+        'https://preprod.prtpg.com/transactionServices/REST/v1/payments/{id}'
+      parameters.value = ''
+      textAreaHeight.value = 100
+      parameters.value = formatParams(['paymentType=[CP/RF]'], '\n')
+      break
+
+    case 'Reverse/Cancel':
+      endPoint.value =
+        'https://preprod.prtpg.com/transactionServices/REST/v1/payments/{id}'
+      parameters.value = ''
+      textAreaHeight.value = 100
+      parameters.value = formatParams(['paymentType=RV'], '\n')
+      break
+
+    case 'Inquiry':
+      endPoint.value =
+        'https://preprod.prtpg.com/transactionServices/REST/v1/payments/{id}'
+      parameters.value = ''
+      textAreaHeight.value = 100
+      parameters.value = formatParams(['paymentType=IN', 'idType=PID'], '\n')
+      break
+
+    default:
+      endPoint.value = ''
+      break
+  }
+})
 
 /**
  * Mounted method here
@@ -120,18 +173,45 @@ async function submitServerToServer() {
       // Handle data
       let arrAllParams = _.split(parameters.value, '\n')
 
-      // create the checksum parameter <memberId>|<secureKey>|<merchantTransactionId>|<amount>
-      let dataString = `${request.memberId}|${request.secureKey}|${request.merchantTransactionId}|${request.amount}`
-      let paramChecksum = `authentication.checksum=${generateHash(dataString)}`
+      // handle checksum data based on 'selectedOperation'
+      let dataString = ''
 
-      // push!
-      arrAllParams.push(paramChecksum)
+      switch (selectedOperation.value) {
+        case 'Synchronous':
+          // <memberId>|<secureKey>|<merchantTransactionId>|<amount>
+          dataString = `${request.memberId}|${request.secureKey}|${request.merchantTransactionId}|${request.amount}`
+          arrAllParams.push(`amount=${request.amount}`)
+          arrAllParams.push(
+            `merchantRedirectUrl=${request.merchantRedirectUrl}`
+          )
+          arrAllParams.push(
+            `merchantTransactionId=${request.merchantTransactionId}`
+          )
+          break
+
+        case 'Capture/Refund':
+          // <memberId>|<secureKey>|<paymentId>|<amount>
+          dataString = `${request.memberId}|${request.secureKey}|${request.paymentId}|${request.amount}`
+          arrAllParams.push(`amount=${request.amount}`)
+          break
+
+        case 'Reverse/Cancel':
+          // <memberId>|<secureKey>|<paymentId>
+          dataString = `${request.memberId}|${request.secureKey}|${request.paymentId}`
+          break
+
+        case 'Inquiry':
+          // <memberId>|<secureKey>|<paymentId>
+          dataString = `${request.memberId}|${request.secureKey}|${request.paymentId}`
+          break
+
+        default:
+          break
+      }
+
+      // push required
       arrAllParams.push(`authentication.memberId=${request.memberId}`)
-      arrAllParams.push(`amount=${request.amount}`)
-      arrAllParams.push(`merchantRedirectUrl=${request.merchantRedirectUrl}`)
-      arrAllParams.push(
-        `merchantTransactionId=${request.merchantTransactionId}`
-      )
+      arrAllParams.push(`authentication.checksum=${generateHash(dataString)}`)
 
       //
       console.log('Parameters Sent:', arrAllParams)
@@ -151,9 +231,6 @@ async function submitServerToServer() {
 
       // parse!
       serverResponse.value = await rawResponse.json()
-
-      // display
-      console.info(serverResponse)
 
       //
     } else {
@@ -179,6 +256,18 @@ async function submitServerToServer() {
 
       <hr />
 
+      <div class="mb-3">
+        <select
+          class="form-select"
+          aria-label="Select for Operations"
+          v-model="selectedOperation"
+        >
+          <option v-for="operation in operations" :value="operation">
+            {{ operation }}
+          </option>
+        </select>
+      </div>
+
       <FormInput
         input-id="endpoint"
         input-label="API Endpoint"
@@ -187,6 +276,22 @@ async function submitServerToServer() {
         helper-text-id="endpointHelper"
         helper-text="Change the subdomain to 'secure' for a live transaction."
       />
+
+      <transition>
+        <FormInput
+          input-id="paymentId"
+          input-label="Payment ID"
+          input-placeholder="123415"
+          v-model="request.paymentId"
+          helper-text-id="paymentIdHelper"
+          helper-text="The tracking ID of the transaction being referred to in the backoffice operation."
+          v-if="
+            selectedOperation === 'Capture/Refund' ||
+            selectedOperation === 'Reverse/Cancel' ||
+            selectedOperation === 'Inquiry'
+          "
+        />
+      </transition>
 
       <FormInput
         input-id="partnerId"
@@ -212,6 +317,8 @@ async function submitServerToServer() {
         input-label="Merchant Secure Key"
         input-placeholder="XXXXXXXXX"
         v-model="request.secureKey"
+        helper-text-id="secureKeyHelper"
+        helper-text="Assigned by the gateway provider."
       />
 
       <FormInput
@@ -223,35 +330,47 @@ async function submitServerToServer() {
         helper-text="Merchant's unique ID, this is assigned by the gateway provider."
       />
 
-      <FormInputTrxIdGen
-        input-id="merchantTransactionId"
-        input-label="Merchant Transaction ID"
-        input-placeholder="test_transaction_0001"
-        v-model="request.merchantTransactionId"
-        helper-text-id="merchantTransactionIdHelper"
-        helper-text="This is auto-generated by the app on page-load. Click the 'New' button to generate a new one."
-      />
+      <transition>
+        <FormInputTrxIdGen
+          input-id="merchantTransactionId"
+          input-label="Merchant Transaction ID"
+          input-placeholder="test_transaction_0001"
+          v-model="request.merchantTransactionId"
+          helper-text-id="merchantTransactionIdHelper"
+          helper-text="This is auto-generated by the app on page-load. Click the 'New' button to generate a new one."
+          v-if="selectedOperation === 'Synchronous'"
+        />
+      </transition>
 
-      <FormInput
-        input-id="amount"
-        input-label="Amount"
-        input-placeholder="1.00"
-        v-model="request.amount"
-      />
+      <transition>
+        <FormInput
+          input-id="amount"
+          input-label="Amount"
+          input-placeholder="1.00"
+          v-model="request.amount"
+          v-if="
+            selectedOperation === 'Synchronous' ||
+            selectedOperation === 'Capture/Refund'
+          "
+        />
+      </transition>
 
-      <FormInput
-        input-id="merchantRedirectUrl"
-        input-label="Merchant Redirect URL"
-        input-placeholder="https://prtpg.herokuapp.com/display_request_result.php"
-        v-model="request.merchantRedirectUrl"
-        helper-text-id="merchantRedirectUrlHelper"
-        helper-text="The customer is redirected here for async (3DS, APM, etc.) transactions."
-      />
+      <transition>
+        <FormInput
+          input-id="merchantRedirectUrl"
+          input-label="Merchant Redirect URL"
+          input-placeholder="https://prtpg.herokuapp.com/display_request_result.php"
+          v-model="request.merchantRedirectUrl"
+          helper-text-id="merchantRedirectUrlHelper"
+          helper-text="The customer is redirected here for async (3DS, APM, etc.) transactions."
+          v-if="selectedOperation === 'Synchronous'"
+        />
+      </transition>
 
       <FormText
         text-id="parameters"
         text-label="Parameters"
-        :text-height="500"
+        :text-height="textAreaHeight"
         v-model="parameters"
       />
 
@@ -261,7 +380,7 @@ async function submitServerToServer() {
           class="btn btn-dark"
           @click="submitServerToServer"
         >
-          Submit
+          <span v-if="!isLoading"> Submit </span>
           <span
             class="spinner-grow spinner-grow-sm"
             role="status"
@@ -276,7 +395,7 @@ async function submitServerToServer() {
         <FormTextDisplayOnly
           text-id="serverResponse"
           text-label="Server Response"
-          :text-height="300"
+          :text-height="550"
           :data="serverResponse"
           v-if="serverResponse"
         />

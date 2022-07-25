@@ -9,6 +9,7 @@ export const request = reactive({
   memberId: '',
   totype: '',
   amount: '1.00',
+  paymentId: '',
   merchantTransactionId: '',
   merchantRedirectUrl: '',
   secureKey: '',
