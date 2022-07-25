@@ -10,6 +10,6 @@ export const request = reactive({
   totype: '',
   amount: '1.00',
   merchantTransactionId: '',
-  merchantRedirectUrl: 'https://prtpg.herokuapp.com/display_request_result.php',
+  merchantRedirectUrl: '',
   secureKey: '',
 })

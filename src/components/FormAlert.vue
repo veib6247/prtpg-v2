@@ -18,7 +18,7 @@ defineProps({
 
 <template>
   <div class="alert" :class="alertType" role="alert">
-    <h4 class="alert-heading">{{ heading }}</h4>
+    <h5 class="alert-heading">{{ heading }}</h5>
     <p v-if="subtitle">{{ subtitle }}</p>
   </div>
 </template>

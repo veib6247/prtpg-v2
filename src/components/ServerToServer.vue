@@ -1,6 +1,7 @@
 <script setup>
 // utils
-import { ref } from 'vue'
+import { ref, reactive } from 'vue'
+import { getSubdomain } from '../utils/stringFormatters.js'
 
 // state manager
 import { request } from '../stateStore.js'
@@ -8,11 +9,57 @@ import { request } from '../stateStore.js'
 // reuseable components
 import FormInput from '../components/FormInput.vue'
 import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
+import FormAlert from '../components/FormAlert.vue'
 
 // local vars
 const endPoint = ref(
   'https://preprod.prtpg.com/transactionServices/REST/v1/payments'
 )
+const response = reactive({ data: {} })
+const showTokenErrorMsg = ref(false)
+
+/**
+ * Generate the auth token
+ */
+async function getAuthToken() {
+  // reset token error state
+  showTokenErrorMsg.value = false
+
+  // using fetch to hit API
+  const rawResponse = await fetch('./php/generate_auth.php', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      subDomain: getSubdomain(endPoint.value),
+      partnerId: request.partnerId,
+      username: request.username,
+      sKey: request.secureKey,
+    }),
+  })
+
+  // parse response into json
+  response.data = await rawResponse.json()
+
+  // if AuthToken exists, autofill the member ID and notify user
+  if (response.data.AuthToken) {
+    request.memberId = response.data.memberId
+  } else {
+    showTokenErrorMsg.value = true
+    request.memberId = ''
+  }
+
+  // display generated token to the user in console
+  console.info(response.data)
+}
+
+/**
+ * Submit transaction
+ */
+async function submitServerToServer() {
+  getAuthToken()
+}
 </script>
 
 <template>
@@ -93,6 +140,37 @@ const endPoint = ref(
         input-placeholder="https://prtpg.herokuapp.com/display_request_result.php"
         v-model="request.merchantRedirectUrl"
       />
+
+      <div class="mb-3">
+        <button
+          type="button"
+          class="btn btn-dark"
+          @click="submitServerToServer"
+        >
+          Submit
+        </button>
+      </div>
+
+      <!-- display alerts re. token generation -->
+      <!-- for success -->
+      <Transition>
+        <FormAlert
+          alert-type="alert-success"
+          :heading="response.data.result.code"
+          :subtitle="response.data.result.description"
+          v-if="response.data.AuthToken"
+        />
+      </Transition>
+
+      <!-- for failed -->
+      <Transition>
+        <FormAlert
+          alert-type="alert-danger"
+          :heading="response.data.result.code"
+          :subtitle="response.data.result.description"
+          v-if="showTokenErrorMsg"
+        />
+      </Transition>
     </div>
   </div>
 </template>

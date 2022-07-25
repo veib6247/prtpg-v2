@@ -29,3 +29,17 @@ export const formatParams = (arrDefault, separator) => {
 export const generateHash = (dataString) => {
   return md5(dataString).toString()
 }
+
+/**
+ * Parses the URL to return just the subdomain
+ * @param {string} urlString
+ * @returns {string} Subdomain of the provided URL string
+ */
+export const getSubdomain = (urlString) => {
+  // parse hostname
+  const url = new URL(urlString).hostname
+  const domain = _.split(url, '.')
+
+  // return the first index of the hostname which will always be the subdomain
+  return domain[0]
+}
