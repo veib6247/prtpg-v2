@@ -124,11 +124,11 @@ onMounted(() => {
             :class="clsServerToServer"
             @click="navToggle"
           >
-            Server-to-Server (WIP)
+            Server-to-Server
           </a>
 
           <a href="#" class="list-group-item list-group-item-action disabled">
-            Filler - For future use
+            TMP - TBD
           </a>
         </div>
       </div>
