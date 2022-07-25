@@ -42,7 +42,7 @@ const textAreaHeight = computed(() => {
     <textarea
       class="form-control font-monospace"
       :id="textId"
-      placeholder=""
+      placeholder="[INSERT PARAMETERS HERE]"
       :style="textAreaHeight"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
