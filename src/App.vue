@@ -124,7 +124,7 @@ onMounted(() => {
             :class="clsServerToServer"
             @click="navToggle"
           >
-            Server-to-Server
+            Server-to-Server (WIP)
           </a>
 
           <a href="#" class="list-group-item list-group-item-action disabled">
