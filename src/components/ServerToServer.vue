@@ -17,6 +17,7 @@ const endPoint = ref(
 )
 const response = reactive({ data: {} })
 const showTokenErrorMsg = ref(false)
+const isLoading = ref(false)
 
 /**
  * Generate the auth token
@@ -48,17 +49,19 @@ async function getAuthToken() {
     // if AuthToken exists, autofill the member ID and notify user
     if (response.data.AuthToken) {
       // display generated token to the user in console
-      console.info(response.data)
-
+      console.info('Token Generation API Response:', response.data)
       // set member ID
       request.memberId = response.data.memberId
+      return true
     } else {
       // set error values and clear memberId
       showTokenErrorMsg.value = true
       request.memberId = ''
+      return false
     }
   } catch (error) {
     console.error(error)
+    return false
   }
 }
 
@@ -66,7 +69,23 @@ async function getAuthToken() {
  * Submit transaction
  */
 async function submitServerToServer() {
-  getAuthToken()
+  // start loading animation
+  isLoading.value = true
+
+  try {
+    // get token
+    const tokenStatus = await getAuthToken()
+
+    if (tokenStatus) {
+      console.log('EUREKA!')
+    } else {
+      console.error('BULLOCKS!')
+    }
+  } catch (err) {
+    console.error(err)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script>
 
@@ -156,6 +175,12 @@ async function submitServerToServer() {
           @click="submitServerToServer"
         >
           Submit
+          <span
+            class="spinner-grow spinner-grow-sm"
+            role="status"
+            aria-hidden="true"
+            v-if="isLoading"
+          ></span>
         </button>
       </div>
 
