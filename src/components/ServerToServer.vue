@@ -6,6 +6,7 @@ import {
   formatParams,
   generateHash,
 } from '../utils/stringFormatters.js'
+import { _ } from 'lodash'
 
 // state manager
 import { request } from '../stateStore.js'
@@ -15,12 +16,14 @@ import FormInput from '../components/FormInput.vue'
 import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
 import FormAlert from '../components/FormAlert.vue'
 import FormText from '../components/FormText.vue'
+import FormTextDisplayOnly from '../components/FormTextDisplayOnly.vue'
 
 // local vars
 const endPoint = ref(
   'https://preprod.prtpg.com/transactionServices/REST/v1/payments'
 )
 const response = reactive({ data: {} })
+const serverResponse = ref('')
 const showTokenErrorMsg = ref(false)
 const isLoading = ref(false)
 const parameters = ref('')
@@ -65,6 +68,7 @@ async function getAuthToken() {
   // response and error states
   showTokenErrorMsg.value = false
   response.data = {}
+  serverResponse.value = ''
 
   try {
     // using fetch to hit API
@@ -113,7 +117,45 @@ async function submitServerToServer() {
 
     // check if token is generated successfully, else do nothing, become British
     if (await getAuthToken()) {
-      console.log('EUREKA!')
+      // Handle data
+      let arrAllParams = _.split(parameters.value, '\n')
+
+      // create the checksum parameter <memberId>|<secureKey>|<merchantTransactionId>|<amount>
+      let dataString = `${request.memberId}|${request.secureKey}|${request.merchantTransactionId}|${request.amount}`
+      let paramChecksum = `authentication.checksum=${generateHash(dataString)}`
+
+      // push!
+      arrAllParams.push(paramChecksum)
+      arrAllParams.push(`authentication.memberId=${request.memberId}`)
+      arrAllParams.push(`amount=${request.amount}`)
+      arrAllParams.push(`merchantRedirectUrl=${request.merchantRedirectUrl}`)
+      arrAllParams.push(
+        `merchantTransactionId=${request.merchantTransactionId}`
+      )
+
+      //
+      console.log('Parameters Sent:', arrAllParams)
+
+      // fetch!
+      const rawResponse = await fetch('./php/submit_server.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          endPoint: endPoint.value,
+          token: response.data.AuthToken,
+          parameters: formatParams(arrAllParams, '&'),
+        }),
+      })
+
+      // parse!
+      serverResponse.value = await rawResponse.json()
+
+      // display
+      console.info(serverResponse)
+
+      //
     } else {
       console.error("Bullocks! I can't believe you've done this.")
     }
@@ -228,6 +270,17 @@ async function submitServerToServer() {
           ></span>
         </button>
       </div>
+
+      <!-- display for the transaction response -->
+      <Transition>
+        <FormTextDisplayOnly
+          text-id="serverResponse"
+          text-label="Server Response"
+          :text-height="300"
+          :data="serverResponse"
+          v-if="serverResponse"
+        />
+      </Transition>
 
       <!-- display alerts re. token generation -->
       <!-- for success -->
