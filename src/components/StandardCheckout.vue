@@ -14,9 +14,9 @@ import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
 
 // local vars
 const endPoint = ref('https://preprod.prtpg.com/transaction/Checkout')
-let parameters = ref('')
+const parameters = ref('')
 const defaultParameters = ref([
-  'orderDescription=This is a test transaction.',
+  'orderDescription=This is a Standard Checkout test transaction.',
   'country=PH',
   'city=Makati',
   'state=NCR',

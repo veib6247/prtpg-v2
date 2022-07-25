@@ -1,7 +1,11 @@
 <script setup>
 // utils
-import { ref, reactive } from 'vue'
-import { getSubdomain } from '../utils/stringFormatters.js'
+import { ref, reactive, onMounted } from 'vue'
+import {
+  getSubdomain,
+  formatParams,
+  generateHash,
+} from '../utils/stringFormatters.js'
 
 // state manager
 import { request } from '../stateStore.js'
@@ -10,6 +14,7 @@ import { request } from '../stateStore.js'
 import FormInput from '../components/FormInput.vue'
 import FormInputTrxIdGen from '../components/FormInputTrxIdGen.vue'
 import FormAlert from '../components/FormAlert.vue'
+import FormText from '../components/FormText.vue'
 
 // local vars
 const endPoint = ref(
@@ -18,6 +23,39 @@ const endPoint = ref(
 const response = reactive({ data: {} })
 const showTokenErrorMsg = ref(false)
 const isLoading = ref(false)
+const parameters = ref('')
+const defaultParameters = ref([
+  'orderDescriptor=This is a REST API test transaction.',
+  'shipping.country=PH',
+  'shipping.city=Makati',
+  'shipping.state=NCR',
+  'shipping.postcode=1227',
+  'shipping.street1=Valero',
+  'customer.telnocc=63',
+  'customer.phone=9294112356',
+  'customer.email=flex.gateway@payreto.com',
+  'customer.givenName=John',
+  'customer.surname=Wick',
+  'customer.birthDate=19930528',
+  'customer.ip=192.168.0.1',
+  'card.number=4111110000000021',
+  'card.expiryMonth=12',
+  'card.expiryYear=2030',
+  'card.cvv=123',
+  'currency=REPLACE_ME',
+  'paymentBrand=REPLACE_ME',
+  'paymentMode=REPLACE_ME',
+  'paymentType=REPLACE_ME',
+  'authentication.terminalId=REPLACE_ME',
+])
+
+/**
+ * Mounted method here
+ */
+onMounted(() => {
+  // format default params on mount to fit into text area
+  parameters.value = formatParams(defaultParameters.value, '\n')
+})
 
 /**
  * Generate the auth token
@@ -69,17 +107,15 @@ async function getAuthToken() {
  * Submit transaction
  */
 async function submitServerToServer() {
-  // start loading animation
-  isLoading.value = true
-
   try {
-    // get token
-    const tokenStatus = await getAuthToken()
+    // start loading animation
+    isLoading.value = true
 
-    if (tokenStatus) {
+    // check if token is generated successfully, else do nothing, become British
+    if (await getAuthToken()) {
       console.log('EUREKA!')
     } else {
-      console.error('BULLOCKS!')
+      console.error("Bullocks! I can't believe you've done this.")
     }
   } catch (err) {
     console.error(err)
@@ -166,6 +202,15 @@ async function submitServerToServer() {
         input-label="Merchant Redirect URL"
         input-placeholder="https://prtpg.herokuapp.com/display_request_result.php"
         v-model="request.merchantRedirectUrl"
+        helper-text-id="merchantRedirectUrlHelper"
+        helper-text="The customer is redirected here for async (3DS, APM, etc.) transactions."
+      />
+
+      <FormText
+        text-id="parameters"
+        text-label="Parameters"
+        :text-height="500"
+        v-model="parameters"
       />
 
       <div class="mb-3">

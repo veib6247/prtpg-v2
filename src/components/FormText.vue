@@ -30,7 +30,8 @@ const props = defineProps({
 defineEmits(['update:modelValue'])
 
 /**
- * Computer, preformatted
+ * Bootstrap does not recommend using the 'rows' attribute for form-floating textAreas
+ * @returns {string} inline height style by px.
  */
 const textAreaHeight = computed(() => {
   return `height: ${props.textHeight}px`
