@@ -20,38 +20,46 @@ const showTokenErrorMsg = ref(false)
 
 /**
  * Generate the auth token
+ * @returns {boolean} determines if the token was generated or not
  */
 async function getAuthToken() {
-  // reset token error state
+  // response and error states
   showTokenErrorMsg.value = false
+  response.data = {}
 
-  // using fetch to hit API
-  const rawResponse = await fetch('./php/generate_auth.php', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      subDomain: getSubdomain(endPoint.value),
-      partnerId: request.partnerId,
-      username: request.username,
-      sKey: request.secureKey,
-    }),
-  })
+  try {
+    // using fetch to hit API
+    const rawResponse = await fetch('./php/generate_auth.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        subDomain: getSubdomain(endPoint.value),
+        partnerId: request.partnerId,
+        username: request.username,
+        sKey: request.secureKey,
+      }),
+    })
 
-  // parse response into json
-  response.data = await rawResponse.json()
+    // parse response into json
+    response.data = await rawResponse.json()
 
-  // if AuthToken exists, autofill the member ID and notify user
-  if (response.data.AuthToken) {
-    request.memberId = response.data.memberId
-  } else {
-    showTokenErrorMsg.value = true
-    request.memberId = ''
+    // if AuthToken exists, autofill the member ID and notify user
+    if (response.data.AuthToken) {
+      // display generated token to the user in console
+      console.info(response.data)
+
+      // set member ID
+      request.memberId = response.data.memberId
+    } else {
+      // set error values and clear memberId
+      showTokenErrorMsg.value = true
+      request.memberId = ''
+    }
+  } catch (error) {
+    console.error(error)
   }
-
-  // display generated token to the user in console
-  console.info(response.data)
 }
 
 /**
@@ -158,6 +166,7 @@ async function submitServerToServer() {
           alert-type="alert-success"
           :heading="response.data.result.code"
           :subtitle="response.data.result.description"
+          :footer="`Timestamp: ${response.data.timestamp}`"
           v-if="response.data.AuthToken"
         />
       </Transition>
