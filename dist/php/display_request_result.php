@@ -33,17 +33,19 @@
 
       <!-- right col -->
       <div class="col p-4">
-        <table class="table table-striped table-hover">
-          <thead>
-            <tr>
-              <th scope="col">Field</th>
-              <th scope="col">Value</th>
-            </tr>
-          </thead>
-          <tbody class="table-group-divider">
-            <?php
+        <div class="card">
+          <div class="card-body">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th scope="col">Field</th>
+                  <th scope="col">Value</th>
+                </tr>
+              </thead>
+              <tbody class="table-group-divider font-monospace">
+                <?php
 foreach ($_POST as $key => $value) {
- echo '
+  echo '
                             <tr>
                               <td>' . $key . '</td>
                               <td>' . $value . '</td>
@@ -51,8 +53,12 @@ foreach ($_POST as $key => $value) {
 }
 ?>
 
-          </tbody>
-        </table>
+              </tbody>
+            </table>
+
+          </div>
+        </div>
+
       </div>
 
 
@@ -76,6 +82,17 @@ foreach ($_POST as $key => $value) {
     integrity="sha384-gH2yIJqKdNHPEq0n4Mqa/HGKIhSkIHeL5AyhkYV8i59U5AR6csBvApHHNl/vI1Bx" crossorigin="anonymous">
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous">
+  </script>
+
+  <!-- ko-fi floating widget button -->
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  <script>
+  kofiWidgetOverlay.draw('fukazer0', {
+    type: 'floating-chat',
+    'floating-chat.donateButton.text': 'Support me',
+    'floating-chat.donateButton.background-color': '#5bc0de',
+    'floating-chat.donateButton.text-color': '#323842',
+  })
   </script>
 </body>
 
