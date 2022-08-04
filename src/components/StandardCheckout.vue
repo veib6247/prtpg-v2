@@ -62,8 +62,8 @@ function submitStandardCheckout() {
   let stdCheckoutForm = document.getElementById('Standard-Checkout-Form')
 
   if (!!document.getElementById('Standard-Checkout-Form')) {
-    console.info('Removing duplicate checkout form')
     stdCheckoutForm.remove()
+    console.info('Removed duplicate checkout form.')
   }
 
   // create the new form element
