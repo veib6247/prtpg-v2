@@ -58,14 +58,20 @@ function submitStandardCheckout() {
   arrAllParams.push(`merchantTransactionId=${request.merchantTransactionId}`)
   arrAllParams.push(`merchantRedirectUrl=${request.merchantRedirectUrl}`)
 
-  // log to console for later review by user
-  console.info('Data Submitted:', arrAllParams)
+  // eval if Standard-Checkout-Form already exists and remove it from DOM before creating a new one
+  let stdCheckoutForm = document.getElementById('Standard-Checkout-Form')
 
-  // create the form element
+  if (!!document.getElementById('Standard-Checkout-Form')) {
+    console.info('Removing duplicate checkout form')
+    stdCheckoutForm.remove()
+  }
+
+  // create the new form element
   const form = document.createElement('form')
   form.setAttribute('method', 'POST')
   form.setAttribute('action', endPoint.value)
   form.setAttribute('target', '_blank')
+  form.setAttribute('id', 'Standard-Checkout-Form')
 
   // loop through each item in array to create inputs
   _.forEach(arrAllParams, function (param) {
@@ -83,6 +89,9 @@ function submitStandardCheckout() {
   document.body.appendChild(form)
 
   form.submit()
+
+  // log to console for later review by user
+  console.info('Data Submitted:', arrAllParams)
 }
 </script>
 
