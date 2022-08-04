@@ -136,7 +136,6 @@ onMounted(() => {
       <!-- right column -->
       <div class="col p-4">
         <!-- dynamic component that changes depending on the selected hash -->
-
         <Transition>
           <KeepAlive>
             <component :is="currentView" />
