@@ -126,10 +126,6 @@ onMounted(() => {
           >
             Server-to-Server
           </a>
-
-          <a href="#" class="list-group-item list-group-item-action disabled">
-            TMP - TBD
-          </a>
         </div>
       </div>
 
